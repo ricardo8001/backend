@@ -1,25 +1,34 @@
 from flask import Flask, request, jsonify
-import sqlite3
-from datetime import datetime, timedelta
+import psycopg2
+from datetime import datetime, timedelta, timezone
 from flask_cors import CORS
+import os
+from contextlib import contextmanager
 
 app = Flask(__name__)
 CORS(app)
-DB_PATH = "keys.db"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Inicializa o banco e a tabela se não existirem
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS access_keys (
-            key TEXT PRIMARY KEY,
-            expires_at TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        )
-    """)
-    conn.commit()
-    conn.close()
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS access_keys (
+                key TEXT PRIMARY KEY,
+                expires_at TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        """)
+        conn.commit()
+
+@contextmanager
+def get_db_connection():
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 @app.route("/", methods=["GET"])
 def home():
@@ -37,23 +46,22 @@ def validar():
         return jsonify({"success": False, "error": "Chave não fornecida."}), 400
 
     try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT expires_at FROM access_keys WHERE key = ?", (chave,))
-        row = cursor.fetchone()
-        conn.close()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT expires_at FROM access_keys WHERE key = %s", (chave,))
+            row = cursor.fetchone()
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
     if row:
         try:
             expira = datetime.fromisoformat(row[0])
-            if datetime.now() < expira:
+            if datetime.now(timezone.utc) < expira:
                 return jsonify({
-        "success": True,
-        "valid": True,
-        "validade": expira.isoformat()
-    })
+                    "success": True,
+                    "valid": True,
+                    "validade": expira.isoformat()
+                })
             else:
                 return jsonify({"success": True, "valid": False, "error": "Chave expirada."})
         except ValueError:
@@ -64,11 +72,10 @@ def validar():
 @app.route("/listar", methods=["GET"])
 def listar():
     try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT key, expires_at, created_at FROM access_keys")
-        rows = cursor.fetchall()
-        conn.close()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT key, expires_at, created_at FROM access_keys")
+            rows = cursor.fetchall()
         return jsonify([{"key": r[0], "expires_at": r[1], "created_at": r[2]} for r in rows])
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -82,18 +89,19 @@ def adicionar():
     if not chave:
         return jsonify({"success": False, "error": "Chave não fornecida."}), 400
 
-    created_at = datetime.now()
+    created_at = datetime.now(timezone.utc)
     expires_at = created_at + timedelta(days=int(dias_validade))
 
     try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO access_keys (key, expires_at, created_at) VALUES (?, ?, ?)",
-                       (chave, expires_at.isoformat(), created_at.isoformat()))
-        conn.commit()
-        conn.close()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO access_keys (key, expires_at, created_at) VALUES (%s, %s, %s)",
+                (chave, expires_at.isoformat(), created_at.isoformat())
+            )
+            conn.commit()
         return jsonify({"success": True, "message": "Chave adicionada com sucesso."})
-    except sqlite3.IntegrityError:
+    except psycopg2.IntegrityError:
         return jsonify({"success": False, "error": "Chave já existe."}), 409
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -106,11 +114,10 @@ def remover():
         return jsonify({"success": False, "error": "Chave não fornecida."}), 400
 
     try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM access_keys WHERE key = ?", (chave,))
-        conn.commit()
-        conn.close()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM access_keys WHERE key = %s", (chave,))
+            conn.commit()
         return jsonify({"success": True, "message": "Chave removida com sucesso."})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
