@@ -33,7 +33,6 @@ def favicon():
 
 @app.route("/validar", methods=["POST"])
 def validar():
-   Eror: cannot unpack non-iterable NoneType object
     data = request.get_json()
     chave = data.get("key")
     if not chave:
