@@ -3,10 +3,15 @@ import sqlite3
 from datetime import datetime, timedelta, timezone
 from flask_cors import CORS
 import os
+import logging
 
 app = Flask(__name__)
 CORS(app)
 DB_PATH = "/app/keys.db"  # Persistent path in Render
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # Debug endpoint to check database status
 @app.route("/debug", methods=["GET"])
@@ -34,17 +39,26 @@ def debug():
 
 # Inicializa o banco e a tabela se não existirem
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS access_keys (
-            key TEXT PRIMARY KEY,
-            expires_at TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        )
-    """)
-    conn.commit()
-    conn.close()
+    try:
+        logger.debug(f"Inicializando banco de dados em {DB_PATH}")
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS access_keys (
+                key TEXT PRIMARY KEY,
+                expires_at TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        """)
+        conn.commit()
+        conn.close()
+        logger.debug("Banco de dados inicializado com sucesso")
+    except Exception as e:
+        logger.error(f"Erro ao inicializar o banco de dados: {e}")
+        raise
+
+# Call init_db on startup
+init_db()
 
 @app.route("/", methods=["GET"])
 def home():
@@ -68,6 +82,7 @@ def validar():
         row = cursor.fetchone()
         conn.close()
     except Exception as e:
+        logger.error(f"Erro ao acessar o banco de dados no endpoint /validar: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
     if row:
@@ -92,13 +107,16 @@ def validar():
 @app.route("/listar", methods=["GET"])
 def listar():
     try:
+        logger.debug("Acessando banco de dados para listar chaves")
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute("SELECT key, expires_at, created_at FROM access_keys")
         rows = cursor.fetchall()
         conn.close()
+        logger.debug(f"Chaves encontradas: {len(rows)}")
         return jsonify([{"key": r[0], "expires_at": r[1], "created_at": r[2]} for r in rows])
     except Exception as e:
+        logger.error(f"Erro ao listar chaves: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/adicionar", methods=["POST"])
@@ -120,10 +138,13 @@ def adicionar():
                        (chave, expires_at.isoformat(), created_at.isoformat()))
         conn.commit()
         conn.close()
+        logger.debug(f"Chave {chave} adicionada com sucesso")
         return jsonify({"success": True, "message": "Chave adicionada com sucesso."})
     except sqlite3.IntegrityError:
+        logger.warning(f"Tentativa de adicionar chave duplicada: {chave}")
         return jsonify({"success": False, "error": "Chave já existe."}), 409
     except Exception as e:
+        logger.error(f"Erro ao adicionar chave: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/remover", methods=["DELETE"])
@@ -139,10 +160,11 @@ def remover():
         cursor.execute("DELETE FROM access_keys WHERE key = ?", (chave,))
         conn.commit()
         conn.close()
+        logger.debug(f"Chave {chave} removida com sucesso")
         return jsonify({"success": True, "message": "Chave removida com sucesso."})
     except Exception as e:
+        logger.error(f"Erro ao remover chave: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True, host="0.0.0.0", port=5000)
