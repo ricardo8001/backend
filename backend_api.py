@@ -9,6 +9,14 @@ app = Flask(__name__)
 CORS(app)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Debug endpoint to check DATABASE_URL
+@app.route("/debug", methods=["GET"])
+def debug():
+    return jsonify({
+        "DATABASE_URL": DATABASE_URL if DATABASE_URL else "Not set",
+        "success": True
+    })
+
 # Inicializa o banco e a tabela se não existirem
 def init_db():
     with get_db_connection() as conn:
@@ -56,7 +64,10 @@ def validar():
     if row:
         try:
             expira = datetime.fromisoformat(row[0])
-            if datetime.now(timezone.utc) < expira:
+            # Compare only dates, ignoring time
+            expira_date = expira.date()
+            current_date = datetime.now(timezone.utc).date()
+            if current_date <= expira_date:
                 return jsonify({
                     "success": True,
                     "valid": True,
