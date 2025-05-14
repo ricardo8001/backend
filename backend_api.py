@@ -3,6 +3,7 @@ import sqlite3
 from datetime import datetime, timedelta
 from flask_cors import CORS
 import logging
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -52,11 +53,11 @@ def validar():
 
     if row:
         try:
-            # Assume que expires_at está em formato ISO sem timezone (ex: 2025-05-13T22:12:00)
-            expira_str = row[0]
+            # Remove qualquer sufixo de timezone (+00:00, Z, etc.)
+            expira_str = re.sub(r'([+-]\d{2}:\d{2}|Z)$', '', row[0].strip())
             logging.debug(f"expires_at lido: {expira_str}")
-            expira = datetime.fromisoformat(expira_str)
-            current_utc = datetime.utcnow()
+            expira = datetime.fromisoformat(expira_str)  # Parse como naive datetime
+            current_utc = datetime.utcnow()  # Naive datetime em UTC
             logging.debug(f"Comparando {current_utc} com {expira}")
             if current_utc < expira:
                 return jsonify({
@@ -82,8 +83,8 @@ def listar():
         conn.close()
         return jsonify([{
             "key": r[0],
-            "expires_at": r[1] + "Z",  # Indica UTC na resposta
-            "created_at": r[2] + "Z"   # Indica UTC na resposta
+            "expires_at": re.sub(r'([+-]\d{2}:\d{2}|Z)$', '', r[1].strip()) + "Z",  # Indica UTC na resposta
+            "created_at": re.sub(r'([+-]\d{2}:\d{2}|Z)$', '', r[2].strip()) + "Z"   # Indica UTC na resposta
         } for r in rows])
     except Exception as e:
         logging.error(f"Erro ao listar chaves: {str(e)}")
