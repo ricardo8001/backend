@@ -1,59 +1,82 @@
-import asyncio
-from telethon import TelegramClient, events
-from telethon.tl.types import Chat, Channel
+from flask import Flask, request, jsonify
+import sqlite3
+from datetime import datetime, timedelta
+from flask_cors import CORS
+import pytz  # Add pytz for time zone handling
 
-# Suas credenciais
-api_id = 27082494
-api_hash = '212e3977ead802faf3d92e0b239c8f1e'
-source_group_id = -1002422757085
+app = Flask(__name__)
+CORS(app)
+DB_PATH = "keys.db"
 
-client = TelegramClient('forwarder_with_delay', api_id, api_hash)
-target_entities = []
+# Use UTC timezone
+UTC = pytz.UTC
 
-# Buscar grupos/canais válidos
-async def get_target_groups():
-    print("\n🔍 Buscando grupos e canais onde é possível encaminhar...")
-    groups = []
-    async for dialog in client.iter_dialogs():
-        entity = dialog.entity
+# Inicializa o banco e a tabela se não existirem
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS access_keys (
+            key TEXT PRIMARY KEY,
+            expires_at TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
 
-        if entity.id == source_group_id or dialog.id == source_group_id:
-            continue
-
-        if isinstance(entity, (Chat, Channel)) and (dialog.is_group or dialog.is_channel):
-            if isinstance(entity, Channel) and entity.broadcast:
-                print(f"⛔ Ignorado (canal de transmissão): {dialog.name}")
-                continue
-            try:
-                input_entity = await client.get_input_entity(entity)
-                print(f"✅ Adicionado: {dialog.name} (ID: {entity.id})")
-                groups.append(input_entity)
-            except Exception as e:
-                print(f"⚠️ Erro ao adicionar {dialog.name}: {e}")
-    print(f"\n🔢 Total de destinos válidos: {len(groups)}\n")
-    return groups
-
-# Encaminhar mensagem com delay entre os envios
-@client.on(events.NewMessage(chats=source_group_id))
-async def forward_handler(event):
-    print("📥 Nova mensagem recebida. Iniciando encaminhamento...")
-    for entity in target_entities:
+@app.route("/validar", methods=["POST"])
+def validar():
+    data = request.get_json()
+    chave = data.get("key")
+    if not chave:
+        return jsonify({"success": False, "error": "Chave não fornecida."}), 400
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT expires_at FROM access_keys WHERE key = ?", (chave,))
+        row = cursor.fetchone()
+        conn.close()
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    if row:
         try:
-            await event.message.forward_to(entity)
-            print(f"✅ Encaminhado para: {entity}")
-            await asyncio.sleep(1)  # ⏳ Espera 1 segundos antes de enviar para o próximo
-        except Exception as e:
-            print(f"❌ Erro ao encaminhar para {entity}: {e}")
+            expira = datetime.fromisoformat(row[0]).replace(tzinfo=UTC)
+            agora = datetime.now(UTC)  # Use UTC time for comparison
+            if agora < expira:
+                return jsonify({"success": True, "valid": True, "validade": expira.isoformat()})
+            else:
+                return jsonify({"success": True, "valid": False, "error": "Chave expirada."})
+        except ValueError:
+            return jsonify({"success": False, "error": "Formato de dados inválido."}), 500
+    return jsonify({"success": False, "error": "Chave inválida."}), 404
 
-# Função principal
-async def main():
-    await client.start()
-    print("🚀 Conectado com sucesso.")
-    global target_entities
-    target_entities = await get_target_groups()
-    print("🟢 Escutando mensagens do grupo de origem...")
-    await client.run_until_disconnected()
+@app.route("/adicionar", methods=["POST"])
+def adicionar():
+    data = request.get_json()
+    chave = data.get("key")
+    dias_validade = data.get("dias", 30)  # padrão: 30 dias
+    if not chave:
+        return jsonify({"success": False, "error": "Chave não fornecida."}), 400
+    created_at = datetime.now(UTC)  # Use UTC time
+    expires_at = created_at + timedelta(days=int(dias_validade))
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO access_keys (key, expires_at, created_at) VALUES (?, ?, ?)",
+            (chave, expires_at.isoformat(), created_at.isoformat())
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "message": "Chave adicionada com sucesso."})
+    except sqlite3.IntegrityError:
+        return jsonify({"success": False, "error": "Chave já existe."}), 409
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
-# Executa
-with client:
-    client.loop.run_until_complete(main())
+# Rest of your code (listar, remover, etc.) remains unchanged for this fix
+
+if __name__ == "__main__":
+    init_db()
+    app.run(debug=True, host="0.0.0.0", port=5000)
