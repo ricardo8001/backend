@@ -2,10 +2,14 @@ from flask import Flask, request, jsonify
 import sqlite3
 from datetime import datetime, timedelta
 from flask_cors import CORS
+import logging
 
 app = Flask(__name__)
 CORS(app)
 DB_PATH = "keys.db"
+
+# Configura logging para diagnosticar erros
+logging.basicConfig(level=logging.DEBUG)
 
 # Inicializa o banco e a tabela se não existirem
 def init_db():
@@ -43,20 +47,27 @@ def validar():
         row = cursor.fetchone()
         conn.close()
     except Exception as e:
+        logging.error(f"Erro ao consultar banco: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
     if row:
         try:
-            expira = datetime.fromisoformat(row[0]).replace(tzinfo=None)
-            if datetime.utcnow() < expira:
+            # Assume que expires_at está em formato ISO sem timezone (ex: 2025-05-13T22:12:00)
+            expira_str = row[0]
+            logging.debug(f"expires_at lido: {expira_str}")
+            expira = datetime.fromisoformat(expira_str)
+            current_utc = datetime.utcnow()
+            logging.debug(f"Comparando {current_utc} com {expira}")
+            if current_utc < expira:
                 return jsonify({
                     "success": True,
                     "valid": True,
-                    "validade": expira.isoformat() + "Z"  # Indica UTC
+                    "validade": expira.isoformat() + "Z"  # Indica UTC na resposta
                 })
             else:
                 return jsonify({"success": True, "valid": False, "error": "Chave expirada."})
-        except ValueError:
+        except ValueError as ve:
+            logging.error(f"Erro ao parsear data: {str(ve)}, valor: {expira_str}")
             return jsonify({"success": False, "error": "Formato de data inválido."}), 500
 
     return jsonify({"success": False, "error": "Chave inválida."}), 404
@@ -71,10 +82,11 @@ def listar():
         conn.close()
         return jsonify([{
             "key": r[0],
-            "expires_at": r[1] + "Z",  # Indica UTC
-            "created_at": r[2] + "Z"   # Indica UTC
+            "expires_at": r[1] + "Z",  # Indica UTC na resposta
+            "created_at": r[2] + "Z"   # Indica UTC na resposta
         } for r in rows])
     except Exception as e:
+        logging.error(f"Erro ao listar chaves: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/adicionar", methods=["POST"])
@@ -100,6 +112,7 @@ def adicionar():
     except sqlite3.IntegrityError:
         return jsonify({"success": False, "error": "Chave já existe."}), 409
     except Exception as e:
+        logging.error(f"Erro ao adicionar chave: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/remover", methods=["DELETE"])
@@ -117,6 +130,7 @@ def remover():
         conn.close()
         return jsonify({"success": True, "message": "Chave removida com sucesso."})
     except Exception as e:
+        logging.error(f"Erro ao remover chave: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == "__main__":
