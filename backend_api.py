@@ -7,8 +7,7 @@ import re
 
 app = Flask(__name__)
 CORS(app)
-DB_PATH = "keys.db"
-DB_PATH = "keys_enhanced.db"
+DB_PATH = "keys.db,keys_enhanced.db"
 
 # Configura logging para diagnosticar erros
 logging.basicConfig(level=logging.DEBUG)
