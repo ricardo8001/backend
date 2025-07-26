@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: php-site
+    env: docker
+    plan: free
+    autoDeploy: true
