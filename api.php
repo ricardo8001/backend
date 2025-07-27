@@ -3,7 +3,7 @@ error_reporting(0);
 session_start();
 
 function multiexplode($string) {
-    $delimiters = ["|", ";", ":", "/", "»", "«", ">", "<"];
+    $delimiters = ["|", ";", ":", "/", "Â»", "Â«", ">", "<"];
     $one = str_replace($delimiters, $delimiters[0], $string);
     return explode($delimiters[0], $one);
 }
@@ -297,11 +297,11 @@ $messages = ["INVALID_SECURITY_CODE", "is3DSecureRequired", "INVALID_BILLING_ADD
 
 $binchecker = getFluidpayDetails(substr($cc, 0, 6))['details'];
 $ReturnCode = "$binchecker - $code";
-// Verifica se o código está em $messages
+// Verifica se o cÃ³digo estÃ¡ em $messages
 
 if (in_array($code, $messages)) { 
 
-    echo "<span style='color:green;'> Aprovada<span style='color:beige;'>$cc|$mes|$ano|$cvv</span> <span style='color:beige;'>$ReturnCode</span> <span style='color:beige;'>| DEBITOU 12USD|</span><br><span style='color:green;'>DADOS ULTILIZADOS: $email | $nome $sobrenome | $cep | $endereco | $cpf | @ABOBORASUPORTE";
+    echo "<span style='color:green;'> Aprovada <span style='color:beige;'>$cc|$mes|$ano|$cvv-></span> <span style='color:beige;'>$ReturnCode</span> <span style='color:beige;'>| DEBITOU 12USD";
 } else {
-    echo "<span style='color:red;'> Reprovada</span> <span style='color:beige;'>$cc|$mes|$ano|$cvv</span> <span style='color:beige;'>$ReturnCode</span> <span style='color:beige;'>| N�O DEBITOU 12USD|</span><br><span style='color:green;'>DADOS ULTILIZADOS: $email | $nome $sobrenome | $cep | $endereco | $cpf | @ABOBORASUPORTE";
+    echo "<span style='color:red;'> Reprovada </span> <span style='color:beige;'> $cc|$mes|$ano|$cvv-></span> <span style='color:beige;'>$ReturnCode</span> <span style='color:beige;'>| NÃO DEBITOU 12USD";
 }
