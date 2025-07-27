@@ -301,7 +301,7 @@ $ReturnCode = "$binchecker - $code";
 
 if (in_array($code, $messages)) { 
 
-    echo "<span style='color:green;'> Aprovada <span style='color:beige;'>$cc|$mes|$ano|$cvv-></span> <span style='color:beige;'>$ReturnCode</span> <span style='color:beige;'>| DEBITOU 12USD\n";
+    echo "<span style='color:green;'>Aprovada</span> <span style='color:beige;'>$cc|$mes|$ano|$cvv-></span> <span style='color:beige;'>$ReturnCode</span> <span style='color:beige;'>| DEBITOU 12USD</span><br>";
 } else {
-    echo "<span style='color:red;'> Reprovada </span> <span style='color:beige;'> $cc|$mes|$ano|$cvv-></span> <span style='color:beige;'>$ReturnCode</span> <span style='color:beige;'>| NÃO DEBITOU 12USD\n";
+    echo "<span style='color:red;'>Reprovada</span> <span style='color:beige;'>$cc|$mes|$ano|$cvv-></span> <span style='color:beige;'>$ReturnCode</span> <span style='color:beige;'>| NÃO DEBITOU 12USD</span><br>";
 }
