@@ -8,8 +8,7 @@ $saldo = 9999;
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="https://telegra.ph/file/daff0a64a1c6dbf019a4c.jpg">
-    <title>PladixCentral | Checker Validador Itaú</title>
+  
     <link rel="stylesheet" href="./assets/css/vendors_css.css">
     <link rel="stylesheet" href="./assets/css/style.css">
     <link rel="stylesheet" href="./assets/css/skin_color.css">
@@ -56,13 +55,13 @@ $saldo = 9999;
             <div class="col-md-9" style="margin: auto;">
                 <div class="box">
                     <div class="box-body">
-                        <h4 class="text-center text-white"><i class="fa fa-hashtag"></i> <b> CHECKER - STRIPE </b></h4>
+                        <h4 class="text-center text-white"><i class="fa fa-hashtag"></i> <b> CHECKER - AMAZON </b></h4>
                         <p class="text-center text-white">
-                            <i class="fa fa-code"></i> <a href="https://t.me/pladixoficial"> <font class="text-center text-white"> @perryzin <i class="fa fa-code"></i></font></a>
+                            
                         </p>
                         <hr>
                         <div class="form-group">
-                            <textarea id="cux-input" class="form-control text-center" style="resize: none;" rows="4" placeholder="Cole o CUX aqui"></textarea>
+                            <textarea id="cux-input" class="form-control text-center" style="resize: none;" rows="4" placeholder="Cole o COOKIE aqui"></textarea>
                             <button id="toggle-api" class="btn btn-info btn-block mt-2"><i class="fa fa-exchange"></i> API: USA</button>
                         </div>
                         <p class="text-white mb-4">
