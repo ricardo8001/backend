@@ -1,0 +1,80 @@
+@font-face {
+    font-family: "flaticon_worik";
+    src: url("../fonts/flaticon_worik.ttf?15b0fa5d8ded5b0455f27496b61dd4b3") format("truetype"),
+url("../fonts/flaticon_worik.woff?15b0fa5d8ded5b0455f27496b61dd4b3") format("woff"),
+url("../fonts/flaticon_worik.woff2?15b0fa5d8ded5b0455f27496b61dd4b3") format("woff2"),
+url("../fonts/flaticon_worik.eot?15b0fa5d8ded5b0455f27496b61dd4b3#iefix") format("embedded-opentype"),
+url("../fonts/flaticon_worik.svg?15b0fa5d8ded5b0455f27496b61dd4b3#flaticon_worik") format("svg");
+}
+
+i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
+    font-family: flaticon_worik !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.flaticon-asterisk:before {
+    content: "\f101";
+}
+.flaticon-engineering:before {
+    content: "\f102";
+}
+.flaticon-cyber-security:before {
+    content: "\f103";
+}
+.flaticon-ux-design:before {
+    content: "\f104";
+}
+.flaticon-cloud-computing:before {
+    content: "\f105";
+}
+.flaticon-coding:before {
+    content: "\f106";
+}
+.flaticon-service:before {
+    content: "\f107";
+}
+.flaticon-start-up:before {
+    content: "\f108";
+}
+.flaticon-customer-service:before {
+    content: "\f109";
+}
+.flaticon-award:before {
+    content: "\f10a";
+}
+.flaticon-practice:before {
+    content: "\f10b";
+}
+.flaticon-technical-support:before {
+    content: "\f10c";
+}
+.flaticon-flood:before {
+    content: "\f10d";
+}
+.flaticon-quotation:before {
+    content: "\f10e";
+}
+.flaticon-innovation:before {
+    content: "\f10f";
+}
+.flaticon-cyber-security-1:before {
+    content: "\f110";
+}
+.flaticon-quote:before {
+    content: "\f111";
+}
+.flaticon-target:before {
+    content: "\f112";
+}
+.flaticon-vision:before {
+    content: "\f113";
+}
+.flaticon-planning:before {
+    content: "\f114";
+}
