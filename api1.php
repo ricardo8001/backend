@@ -1007,8 +1007,9 @@ if (strpos($mesgirespfim, 'BILLING_ADDRESS_RESTRICTED') !== false || strpos($mes
     echo "Reprovada $lista | ERRO NA VALIDAÇÃO DO MÉTODO DE PAGAMENTO $cardInfo usa";
     exit();
 } else {
-    echo "Reprovada $lista | ERRO DESCONHECIDO $cardInfo usa";
-    exit();
+      echo "<font color='white'>Reprovada -> $lista | Retorno:<font color='red'> VERIFIQUE O SEUS COOKIES, COOKIES RUIM</font>";
+      header('HTTP/1.1 200 OK');
+      exit();
 }
 } else {
     $cardInfo = bin($bin);
