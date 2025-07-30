@@ -29,7 +29,7 @@ $users = load_users();
 
 // Credenciais do administrador
 $admin_user = "admin";
-$admin_password = "admin123";
+$admin_password = "da281009";
 
 // Verificar login
 if (isset($_POST['usuario'], $_POST['senha'])) {
