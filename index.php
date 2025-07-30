@@ -251,26 +251,27 @@
                                 data: formData,
                                 processData: false,
                                 contentType: false,
-                                dataType: 'json',
+                                dataType: 'text', // Alterado para 'text' para receber string
                                 success: function(retorno) {
                                     console.log('Resposta da API:', retorno);
                                     let apiIdentifier = (currentApi === 'api1.php') ? 'usa' : 'ita';
-                                    let formattedRetorno = JSON.stringify(retorno.dados || ['Erro', 'Resposta inválida', cardInfo])
+                                    let isAprovada = retorno.startsWith('Aprovada');
+                                    let formattedRetorno = retorno
                                         .replace('Aprovada', '<font color="green">Aprovada</font>')
-                                        .replace('Authorised (00)', '<font color="green">Authorised (00)</font>')
-                                        .replace(' | Retorno:', ' | ' + cardInfo + ' | Retorno:');
-                                    if (retorno.erro === "false" && retorno.dados && retorno.dados[2].indexOf('Aprovada') >= 0) {
+                                        .replace('Authorised', '<font color="green">Authorised</font>');
+                                    
+                                    if (isAprovada) {
                                         $.toast({
                                             heading: 'Sucesso',
                                             text: '+1 Aprovada!',
                                             position: 'top-right',
                                             icon: 'success'
                                         });
-                                        $('#aprovadas').append(formattedRetorno + ' ' + apiIdentifier + '<br>');
+                                        $('#aprovadas').append(formattedRetorno + '<br>');
                                         lives++;
                                         $('#lives').text(lives);
                                     } else {
-                                        $('#reprovadas').append(formattedRetorno + ' ' + apiIdentifier + '<br>');
+                                        $('#reprovadas').append(formattedRetorno + '<br>');
                                         dies++;
                                         $('#dies').text(dies);
                                     }
@@ -289,7 +290,7 @@
                                         position: 'top-right',
                                         icon: 'error'
                                     });
-                                    $('#reprovadas').append(JSON.stringify([data, 'Erro na API: ' + textStatus, cardInfo]) + ' ' + (currentApi === 'api1.php' ? 'usa' : 'ita') + '<br>');
+                                    $('#reprovadas').append('Reprovada ' + data + ' | Erro na API: ' + textStatus + ' | ' + cardInfo + ' ' + (currentApi === 'api1.php' ? 'usa' : 'ita') + '<br>');
                                     testadas++;
                                     dies++;
                                     $('#testado').text(testadas);
@@ -345,26 +346,27 @@
                                 data: formData,
                                 processData: false,
                                 contentType: false,
-                                dataType: 'json',
+                                dataType: 'text', // Alterado para 'text' para receber string
                                 success: function(retorno) {
                                     console.log('Resposta da API:', retorno);
                                     let apiIdentifier = (currentApi === 'api1.php') ? 'usa' : 'ita';
-                                    let formattedRetorno = JSON.stringify(retorno.dados || ['Erro', 'Resposta inválida', cardInfo])
+                                    let isAprovada = retorno.startsWith('Aprovada');
+                                    let formattedRetorno = retorno
                                         .replace('Aprovada', '<font color="green">Aprovada</font>')
-                                        .replace('Authorised (00)', '<font color="green">Authorised (00)</font>')
-                                        .replace(' | Retorno:', ' | ' + cardInfo + ' | Retorno:');
-                                    if (retorno.erro === "false" && retorno.dados && retorno.dados[2].indexOf('Aprovada') >= 0) {
+                                        .replace('Authorised', '<font color="green">Authorised</font>');
+                                    
+                                    if (isAprovada) {
                                         $.toast({
                                             heading: 'Sucesso',
                                             text: '+1 Aprovada!',
                                             position: 'top-right',
                                             icon: 'success'
                                         });
-                                        $('#aprovadas').append(formattedRetorno + ' ' + apiIdentifier + '<br>');
+                                        $('#aprovadas').append(formattedRetorno + '<br>');
                                         lives++;
                                         $('#lives').text(lives);
                                     } else {
-                                        $('#reprovadas').append(formattedRetorno + ' ' + apiIdentifier + '<br>');
+                                        $('#reprovadas').append(formattedRetorno + '<br>');
                                         dies++;
                                         $('#dies').text(dies);
                                     }
@@ -383,7 +385,7 @@
                                         position: 'top-right',
                                         icon: 'error'
                                     });
-                                    $('#reprovadas').append(JSON.stringify([data, 'Erro na API: ' + textStatus, cardInfo]) + ' ' + (currentApi === 'api1.php' ? 'usa' : 'ita') + '<br>');
+                                    $('#reprovadas').append('Reprovada ' + data + ' | Erro na API: ' + textStatus + ' | ' + cardInfo + ' ' + (currentApi === 'api1.php' ? 'usa' : 'ita') + '<br>');
                                     testadas++;
                                     dies++;
                                     $('#testado').text(testadas);
