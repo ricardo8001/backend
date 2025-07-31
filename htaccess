@@ -1,0 +1,7 @@
+
+<Files "api1.php">
+    SetEnvIf Referer "^https://backend-1-effb.onrender.com/" allowed_referer
+    Order Deny,Allow
+    Deny from all
+    Allow from env=allowed_referer
+</Files>
