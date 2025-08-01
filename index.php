@@ -450,6 +450,7 @@ if (!isset($_SESSION['logado'])):
     <link rel="stylesheet" href="./assets/css/vendors_css.css">
     <link rel="stylesheet" href="./assets/css/style.css">
     <link rel="stylesheet" href="./assets/css/skin_color.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <style type="text/css">
         ::-webkit-scrollbar {
             width: 2px;
@@ -516,6 +517,39 @@ if (!isset($_SESSION['logado'])):
         .logout-btn:hover {
             background: #c82333;
         }
+        .btn-video {
+            background: linear-gradient(to right, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .btn-video:hover {
+            background: linear-gradient(to right, #059669, #047857);
+            transform: translateY(-2px);
+        }
+        .modal-content {
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 10px;
+        }
+        .modal-content .close {
+            color: white;
+            opacity: 1;
+        }
+        .modal-content .close:hover {
+            color: #ccc;
+        }
+        .modal-body a {
+            color: #10b981;
+            text-decoration: none;
+        }
+        .modal-body a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body class="dark-skin theme-primary">
@@ -539,6 +573,7 @@ if (!isset($_SESSION['logado'])):
                                 <textarea id="cookies2" class="form-control text-center" style="resize: none;" rows="4" placeholder="Cole o COOKIE 2 aqui (Opcional)"></textarea>
                             </div>
                             <button id="toggle-api" class="btn btn-info btn-block mt-2"><i class="fa fa-exchange"></i> API: USA</button>
+                            <button type="button" class="btn-video" data-toggle="modal" data-target="#videoModal">Como obter os Cookies</button>
                         </div>
                         <p class="text-white mb-4">
                             STATUS: <span id="status" class="float-right"><font class="badge badge-dark">Não Iniciado!</font></span>
@@ -579,6 +614,33 @@ if (!isset($_SESSION['logado'])):
                         <div class="tab-pane fade show px-3 pt-4 pb-3" id="tab-dies" role="tabpanel" aria-labelledby="home-tab">
                             <div id="reprovadas" style="overflow:auto; max-height: 500px;"></div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal para Vídeos -->
+        <div class="modal fade" id="videoModal" tabindex="-1" role="dialog" aria-labelledby="videoModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="videoModalLabel">Como Obter os Cookies</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Assista aos vídeos abaixo para aprender como obter os cookies necessários para o Checker Amazon:</p>
+                        <ul>
+                            <li><strong>Vídeo 1: Transformar Conta Normal em Amazon Business</strong><br>
+                                <a href="https://youtu.be/U_JrUP5w4zY" target="_blank">https://youtu.be/U_JrUP5w4zY</a>
+                            </li>
+                            <li><strong>Vídeo 2: Como Pegar os Cookies da Conta Business</strong><br>
+                                <a href="https://youtu.be/eGImAPwIg2w" target="_blank">https://youtu.be/eGImAPwIg2w</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     </div>
                 </div>
             </div>
@@ -680,8 +742,8 @@ if (!isset($_SESSION['logado'])):
                     $.toast({
                         heading: 'Aviso',
                         text: 'Nenhuma linha aprovada para copiar!',
-                        position: 'top-right',
-                        icon: 'warning'
+                            position: 'top-right',
+                            icon: 'warning'
                     });
                 }
             });
