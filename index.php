@@ -45,7 +45,7 @@ if (isset($_POST['usuario'], $_POST['senha'])) {
     } 
     // Verificar se é um usuário comum
     elseif (isset($users[$usuario]) && $users[$usuario]['password'] === $senha) {
-        if ($users[$usuario]['expiration'] > time()) {
+        if (strtotime($users[$usuario]['expiration']) > time()) {
             $_SESSION['logado'] = true;
             $_SESSION['is_admin'] = false;
             $_SESSION['username'] = $usuario;
@@ -90,7 +90,7 @@ if (isset($_POST['create_user'], $_SESSION['is_admin']) && $_SESSION['is_admin']
         $users[$new_user] = [
             'password' => $new_password,
             'start_time' => date('Y-m-d H:i:s', $start_timestamp),
-            'expiration' => $end_timestamp
+            'expiration' => date('Y-m-d H:i:s', $end_timestamp)
         ];
         save_users($users);
         $admin_success = "Usuário $new_user criado com sucesso!";
@@ -128,7 +128,7 @@ if (isset($_POST['edit_user'], $_SESSION['is_admin']) && $_SESSION['is_admin']) 
         }
         $users[$new_username]['password'] = $new_password;
         $users[$new_username]['start_time'] = date('Y-m-d H:i:s', $start_timestamp);
-        $users[$new_username]['expiration'] = $end_timestamp;
+        $users[$new_username]['expiration'] = date('Y-m-d H:i:s', $end_timestamp);
         save_users($users);
         $admin_success = "Usuário $new_username editado com sucesso!";
     }
@@ -149,7 +149,7 @@ if (isset($_POST['delete_user'], $_SESSION['is_admin']) && $_SESSION['is_admin']
 // Verificar expiração para usuário logado
 if (isset($_SESSION['logado'], $_SESSION['username']) && !$_SESSION['is_admin']) {
     $username = $_SESSION['username'];
-    if (isset($users[$username]) && $users[$username]['expiration'] <= time()) {
+    if (isset($users[$username]) && strtotime($users[$username]['expiration']) <= time()) {
         session_destroy();
         header("Location: index.php?logout=1");
         exit;
@@ -349,8 +349,8 @@ if (!isset($_SESSION['logado'])):
                 <tr>
                     <td><?php echo htmlspecialchars($username); ?></td>
                     <td><?php echo htmlspecialchars($data['start_time']); ?></td>
-                    <td><?php echo date('Y-m-d H:i:s', $data['expiration']); ?></td>
-                    <td><?php echo $data['expiration'] > time() ? 'Ativo' : 'Expirado'; ?></td>
+                    <td><?php echo htmlspecialchars($data['expiration']); ?></td>
+                    <td><?php echo strtotime($data['expiration']) > time() ? 'Ativo' : 'Expirado'; ?></td>
                     <td class="action-buttons">
                         <button class="btn btn-warning btn-sm edit-btn" 
                                 data-toggle="modal" 
@@ -358,7 +358,7 @@ if (!isset($_SESSION['logado'])):
                                 data-username="<?php echo htmlspecialchars($username); ?>" 
                                 data-password="<?php echo htmlspecialchars($data['password']); ?>" 
                                 data-start="<?php echo htmlspecialchars($data['start_time']); ?>" 
-                                data-end="<?php echo date('Y-m-d\TH:i', $data['expiration']); ?>">Renovar</button>
+                                data-end="<?php echo date('Y-m-d\TH:i', strtotime($data['expiration'])); ?>">Renovar</button>
                         <form method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir o usuário <?php echo htmlspecialchars($username); ?>?');">
                             <input type="hidden" name="delete_user" value="<?php echo htmlspecialchars($username); ?>">
                             <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
@@ -750,7 +750,7 @@ if (!isset($_SESSION['logado'])):
 
             // Cronômetro para tempo restante (apenas para usuários comuns)
             <?php if (!$_SESSION['is_admin'] && isset($_SESSION['username'], $users[$_SESSION['username']])): ?>
-                const expirationTime = <?php echo $users[$_SESSION['username']]['expiration'] * 1000; ?>; // Em milissegundos
+                const expirationTime = <?php echo strtotime($users[$_SESSION['username']]['expiration']) * 1000; ?>; // Em milissegundos
                 function updateCountdown() {
                     const now = new Date().getTime();
                     const timeLeft = expirationTime - now;
