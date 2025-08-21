@@ -1,4 +1,96 @@
 <?php
+/* === Cookie Auto-Refresh (API hook) — 2025-08-21 ===
+   - Incrementa contador.
+   - A cada 30, inicia/consulta serviço Node (atualizar_cookie.js) e faz refresh.
+   - Sem alterar layout de resposta.
+   - Injeta o cookies1 atualizado diretamente em $_POST['cookies1'] para a lógica já existente consumir.
+*/
+if (!defined('__CU_API_LIGHT__')) {
+    define('__CU_API_LIGHT__', true);
+    date_default_timezone_set('America/Sao_Paulo');
+
+    $COOKIES_FILE = __DIR__ . DIRECTORY_SEPARATOR . 'cookies_atualizado.json';
+    $COUNTER_FILE = __DIR__ . DIRECTORY_SEPARATOR . 'requests_counter.txt';
+    $UPDATER_PORT = 3210;
+    $NEED_REFRESH = false;
+
+    // contador
+    $count = 0;
+    if (file_exists($COUNTER_FILE)) $count = (int)file_get_contents($COUNTER_FILE);
+    $count++;
+    file_put_contents($COUNTER_FILE, (string)$count);
+
+    // HTTP helper
+    function cu_http($method, $path, $payload = null, $timeout = 180) {
+        global $UPDATER_PORT;
+        $url = "http://127.0.0.1:$UPDATER_PORT" . $path;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        if ($payload !== null) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        }
+        $resp = curl_exec($ch);
+        $err = curl_error($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($resp === false || $code === 0) return [false, $err ?: 'no-conn', 0, null];
+        return [true, null, $code, json_decode($resp, true)];
+    }
+
+    // garante serviço Node rodando (se offline, tentar iniciar)
+    function cu_start_node_if_needed() {
+        $script = __DIR__ . DIRECTORY_SEPARATOR . 'atualizar_cookie.js';
+        $isWin = (stripos(PHP_OS_FAMILY, 'Windows') !== false);
+        if ($isWin) {
+            @pclose(@popen('start "" /B node "' . $script . '" > NUL 2>&1', 'r'));
+        } else {
+            @shell_exec('nohup node "' . $script . '" >/dev/null 2>&1 &');
+        }
+    }
+    list($okS, $errS, $codeS, $jsonS) = cu_http('GET', '/status', null, 2);
+    if (!($okS && $codeS === 200)) {
+        cu_start_node_if_needed();
+        // tenta por alguns segundos
+        $tries=0;
+        while ($tries<10) {
+            usleep(700000);
+            list($ok2,$err2,$code2,$json2) = cu_http('GET','/status',null,2);
+            if ($ok2 && $code2===200) { $jsonS=$json2; break; }
+            $tries++;
+        }
+    }
+
+    // a cada 30, faz refresh (pausa controlada)
+    if ($count % 30 === 0) {
+        list($okR, $errR, $codeR, $jsonR) = cu_http('POST', '/refresh', null, 240);
+        if (!($okR && $codeR === 200 && isset($jsonR['ok']) && $jsonR['ok'])) {
+            // se ocupado, esperar ficar livre
+            $wait=0;
+            while ($wait < 120) {
+                usleep(500000);
+                list($okP,$errP,$codeP,$jsonP) = cu_http('GET','/status',null,2);
+                if ($okP && $codeP===200 && isset($jsonP['busy']) && !$jsonP['busy']) break;
+                $wait++;
+            }
+        }
+        $NEED_REFRESH = true;
+    }
+
+    // se houve refresh, injeta o cookies1 novo no POST, para a lógica existente usar
+    if ($NEED_REFRESH && file_exists($COOKIES_FILE)) {
+        $data = json_decode(file_get_contents($COOKIES_FILE), true);
+        if (is_array($data) && !empty($data['cookies1'])) {
+            $_POST['cookies1'] = $data['cookies1'];
+        }
+    }
+}
+?>
+<?php
 $start_time = microtime(true);
 
 error_reporting(0);
