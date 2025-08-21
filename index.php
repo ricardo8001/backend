@@ -1058,7 +1058,7 @@ if (!isset($_SESSION['logado'])):
                                 removelinha();
                                 setTimeout(function() {
                                     processLine(index + 1);
-                                }, 2000); // Delay de 2 segundos
+                                }, 500); // Delay de 2 segundos
                             },
                             error: function(jqXHR, textStatus, errorThrown) {
                                 console.log('Erro na requisição para a API na linha', index + 1, ':', textStatus, errorThrown);
@@ -1076,7 +1076,7 @@ if (!isset($_SESSION['logado'])):
                                 removelinha();
                                 setTimeout(function() {
                                     processLine(index + 1);
-                                }, 2000); // Delay de 2 segundos
+                                }, 500); // Delay de 2 segundos
                             }
                         });
 
