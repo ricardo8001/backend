@@ -205,7 +205,7 @@ if (!isset($_SESSION['logado'])):
         .title {
             position: absolute;
             top: 120px;
-            color: 	#00FA9A;
+            color: #00FA9A;
             font-size: 5rem;
             font-weight: 1000;
             text-align: center;
@@ -757,6 +757,9 @@ if (!isset($_SESSION['logado'])):
             const toggleApiBtn = $('#toggle-api');
             let currentApi = 'api1.php'; // Inicia com API 1 (USA)
             let stopped = false;
+            let requestCount = 0; // Contador de requests
+            const REQUEST_LIMIT = 30; // Limite para troca de cookies
+            const DELAY = 500; // 20 segundos em milissegundos
 
             // Alternar entre APIs ao clicar no botão
             toggleApiBtn.click(function() {
@@ -951,7 +954,7 @@ if (!isset($_SESSION['logado'])):
 
                 let lives = 0, dies = 0, testadas = 0;
 
-                function fetchBinInfo(bin, retries = 1) {
+                function fetchBinInfo(bin) {
                     return new Promise((resolve) => {
                         $.ajax({
                             url: 'get_bin_info.php',
@@ -962,28 +965,21 @@ if (!isset($_SESSION['logado'])):
                             success: function(response) {
                                 let cardInfo = response.cardInfo || 'Bandeira: DESCONHECIDA | Tipo: DESCONHECIDO | Nivel: DESCONHECIDO | Banco: DESCONHECIDO | Pais: DESCONHECIDO';
                                 if (response.error) {
-                                    console.log('Erro ao obter BIN:', response.message, 'BIN:', bin, 'Tentativas restantes:', retries);
+                                    console.log('Erro ao obter BIN:', response.message, 'BIN:', bin);
                                     cardInfo = 'Bandeira: DESCONHECIDA | Tipo: DESCONHECIDO | Nivel: DESCONHECIDO | Banco: DESCONHECIDO | Pais: DESCONHECIDO';
                                 }
                                 console.log('Informações do BIN recebidas:', cardInfo);
                                 resolve(cardInfo);
                             },
                             error: function(jqXHR, textStatus, errorThrown) {
-                                console.log('Erro na requisição para get_bin_info.php:', textStatus, errorThrown, 'BIN:', bin, 'Tentativas restantes:', retries);
-                                if (retries > 0) {
-                                    console.log('Tentando novamente...');
-                                    setTimeout(() => {
-                                        fetchBinInfo(bin, retries - 1).then(resolve);
-                                    }, 1000);
-                                } else {
-                                    $.toast({
-                                        heading: 'Aviso',
-                                        text: 'Erro ao obter informações do BIN! Continuando com BIN desconhecido.',
-                                        position: 'top-right',
-                                        icon: 'warning'
-                                    });
-                                    resolve('Bandeira: DESCONHECIDA | Tipo: DESCONHECIDO | Nivel: DESCONHECIDO | Banco: DESCONHECIDO | Pais: DESCONHECIDO');
-                                }
+                                console.log('Erro na requisição para get_bin_info.php:', textStatus, errorThrown, 'BIN:', bin);
+                                $.toast({
+                                    heading: 'Aviso',
+                                    text: 'Erro ao obter informações do BIN! Continuando com BIN desconhecido.',
+                                    position: 'top-right',
+                                    icon: 'warning'
+                                });
+                                resolve('Bandeira: DESCONHECIDA | Tipo: DESCONHECIDO | Nivel: DESCONHECIDO | Banco: DESCONHECIDO | Pais: DESCONHECIDO');
                             }
                         });
                     });
@@ -1008,8 +1004,49 @@ if (!isset($_SESSION['logado'])):
                     let bin = data.split('|')[0].substring(0, 6);
                     console.log('Processando linha', index + 1, ':', data, 'BIN:', bin);
 
+                    // Incrementar contador de requests
+                    requestCount++;
+
+                    // Verificar se atingiu o limite para troca de cookies
+                    if (requestCount >= REQUEST_LIMIT) {
+                        $.ajax({
+                            url: 'http://localhost:3210/refresh',
+                            method: 'POST',
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.ok) {
+                                    alert('Cookies trocados com sucesso!');
+                                    console.log('Cookies atualizados com sucesso');
+                                } else {
+                                    alert('Falha ao trocar cookies!');
+                                    console.log('Erro ao atualizar cookies:', response.error);
+                                }
+                                // Resetar contador após tentativa de troca
+                                requestCount = 0;
+                                // Continuar processamento após troca
+                                processRequest(index);
+                            },
+                            error: function(jqXHR, textStatus, errorThrown) {
+                                alert('Falha ao trocar cookies!');
+                                console.log('Erro ao chamar /refresh:', textStatus, errorThrown);
+                                // Resetar contador mesmo em caso de erro
+                                requestCount = 0;
+                                // Continuar processamento
+                                processRequest(index);
+                            }
+                        });
+                    } else {
+                        // Processar a linha imediatamente se não for hora de trocar cookies
+                        processRequest(index);
+                    }
+                }
+
+                function processRequest(index) {
+                    let data = array[index];
+                    let bin = data.split('|')[0].substring(0, 6);
+
+                    // Buscar informações do BIN
                     fetchBinInfo(bin).then(cardInfo => {
-                        // Preparar dados para enviar ao API
                         const formData = new FormData();
                         formData.append('lista', data);
                         if (cookies1) formData.append('cookies1', btoa(cookies1));
@@ -1037,7 +1074,7 @@ if (!isset($_SESSION['logado'])):
                                     .replace('Aprovada', '<font color="green">Aprovada</font>')
                                     .replace('Authorised', '<font color="green">Authorised</font>')
                                     .replace('Reprovada', '<font color="red">Reprovada</font>');
-                                
+
                                 if (isAprovada) {
                                     $.toast({
                                         heading: 'Sucesso',
@@ -1056,9 +1093,10 @@ if (!isset($_SESSION['logado'])):
                                 testadas++;
                                 $('#testado').text(testadas);
                                 removelinha();
+                                // Agendar próxima linha com setTimeout
                                 setTimeout(function() {
                                     processLine(index + 1);
-                                }, 500); // Delay de 2 segundos
+                                }, DELAY);
                             },
                             error: function(jqXHR, textStatus, errorThrown) {
                                 console.log('Erro na requisição para a API na linha', index + 1, ':', textStatus, errorThrown);
@@ -1074,9 +1112,10 @@ if (!isset($_SESSION['logado'])):
                                 $('#testado').text(testadas);
                                 $('#dies').text(dies);
                                 removelinha();
+                                // Agendar próxima linha com setTimeout
                                 setTimeout(function() {
                                     processLine(index + 1);
-                                }, 500); // Delay de 2 segundos
+                                }, DELAY);
                             }
                         });
 
