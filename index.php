@@ -1,31 +1,4 @@
 <?php
-/* === Cookie Auto-Refresh Hooks (light) — 2025-08-21 ===
-   - Não cria UI nova.
-   - Não dá redirect.
-   - Só expõe um endpoint AJAX para o front consultar o cookie mais novo
-     e atualizar o campo existente "cookies1" sem recarregar a página.
-*/
-if (!defined('__CU_LIGHT__')) {
-    define('__CU_LIGHT__', true);
-    date_default_timezone_set('America/Sao_Paulo');
-    $COOKIES_FILE = __DIR__ . DIRECTORY_SEPARATOR . 'cookies_atualizado.json';
-
-    if (isset($_GET['ajax']) && $_GET['ajax'] === 'get_latest_cookie') {
-        header('Content-Type: application/json; charset=utf-8');
-        $out = ['ok' => true, 'cookies1' => null, 'lastUpdate' => null];
-        if (file_exists($COOKIES_FILE)) {
-            $data = json_decode(file_get_contents($COOKIES_FILE), true);
-            if (is_array($data)) {
-                $out['cookies1'] = $data['cookies1'] ?? null;
-                $out['lastUpdate'] = $data['lastUpdate'] ?? $data['lastManualUpdate'] ?? null;
-            }
-        }
-        echo json_encode($out);
-        exit;
-    }
-}
-?>
-<?php
 session_start();
 error_reporting(0);
 
@@ -279,42 +252,6 @@ if (!isset($_SESSION['logado'])):
             <button type="submit" class="btn-login w-full">Entrar</button>
         </form>
     </div>
-
-<script>
-// === Cookie Auto-Refresh Poller (não recarrega a página) ===
-(function () {
-  function findCookies1Field() {
-    return document.querySelector('textarea[name="cookies1"], input[name="cookies1"], #cookies1');
-  }
-  let lastApplied = null;
-  async function check() {
-    try {
-      const r = await fetch((location.pathname + '?ajax=get_latest_cookie&ts=' + Date.now()), { cache: 'no-store' });
-      if (!r.ok) return;
-      const data = await r.json();
-      if (!data || !data.ok) return;
-      const cookie = (data.cookies1 || '').trim();
-      if (!cookie) return;
-      if (cookie === lastApplied) return;
-      const el = findCookies1Field();
-      if (!el) return;
-      // se o campo já tem o mesmo valor, não fazer nada
-      if ((el.value || '').trim() === cookie) { lastApplied = cookie; return; }
-      el.value = cookie; // cola o cookie novo no campo já existente
-      lastApplied = cookie;
-      // dispara um evento de input para frameworks que escutam mudanças
-      const evt = new Event('input', { bubbles: true });
-      el.dispatchEvent(evt);
-      console.log('[CU] cookies1 atualizado automaticamente.');
-    } catch (e) {
-      // silencioso
-    }
-  }
-  setInterval(check, 2000); // verifica a cada 2s
-  document.addEventListener('DOMContentLoaded', check);
-})();
-</script>
-
 </body>
 </html>
 <?php exit; endif; ?>
@@ -499,42 +436,6 @@ if (!isset($_SESSION['logado'])):
         });
     });
 </script>
-
-<script>
-// === Cookie Auto-Refresh Poller (não recarrega a página) ===
-(function () {
-  function findCookies1Field() {
-    return document.querySelector('textarea[name="cookies1"], input[name="cookies1"], #cookies1');
-  }
-  let lastApplied = null;
-  async function check() {
-    try {
-      const r = await fetch((location.pathname + '?ajax=get_latest_cookie&ts=' + Date.now()), { cache: 'no-store' });
-      if (!r.ok) return;
-      const data = await r.json();
-      if (!data || !data.ok) return;
-      const cookie = (data.cookies1 || '').trim();
-      if (!cookie) return;
-      if (cookie === lastApplied) return;
-      const el = findCookies1Field();
-      if (!el) return;
-      // se o campo já tem o mesmo valor, não fazer nada
-      if ((el.value || '').trim() === cookie) { lastApplied = cookie; return; }
-      el.value = cookie; // cola o cookie novo no campo já existente
-      lastApplied = cookie;
-      // dispara um evento de input para frameworks que escutam mudanças
-      const evt = new Event('input', { bubbles: true });
-      el.dispatchEvent(evt);
-      console.log('[CU] cookies1 atualizado automaticamente.');
-    } catch (e) {
-      // silencioso
-    }
-  }
-  setInterval(check, 2000); // verifica a cada 2s
-  document.addEventListener('DOMContentLoaded', check);
-})();
-</script>
-
 </body>
 </html>
 <?php exit; endif; ?>
@@ -1058,7 +959,7 @@ if (!isset($_SESSION['logado'])):
                                 removelinha();
                                 setTimeout(function() {
                                     processLine(index + 1);
-                                }, 500); // Delay de 2 segundos
+                                }, 2000); // Delay de 2 segundos
                             },
                             error: function(jqXHR, textStatus, errorThrown) {
                                 console.log('Erro na requisição para a API na linha', index + 1, ':', textStatus, errorThrown);
@@ -1076,7 +977,7 @@ if (!isset($_SESSION['logado'])):
                                 removelinha();
                                 setTimeout(function() {
                                     processLine(index + 1);
-                                }, 500); // Delay de 2 segundos
+                                }, 2000); // Delay de 2 segundos
                             }
                         });
 
@@ -1124,41 +1025,5 @@ document.addEventListener("keydown", function(e) {
     }
 });
 </script>
-
-<script>
-// === Cookie Auto-Refresh Poller (não recarrega a página) ===
-(function () {
-  function findCookies1Field() {
-    return document.querySelector('textarea[name="cookies1"], input[name="cookies1"], #cookies1');
-  }
-  let lastApplied = null;
-  async function check() {
-    try {
-      const r = await fetch((location.pathname + '?ajax=get_latest_cookie&ts=' + Date.now()), { cache: 'no-store' });
-      if (!r.ok) return;
-      const data = await r.json();
-      if (!data || !data.ok) return;
-      const cookie = (data.cookies1 || '').trim();
-      if (!cookie) return;
-      if (cookie === lastApplied) return;
-      const el = findCookies1Field();
-      if (!el) return;
-      // se o campo já tem o mesmo valor, não fazer nada
-      if ((el.value || '').trim() === cookie) { lastApplied = cookie; return; }
-      el.value = cookie; // cola o cookie novo no campo já existente
-      lastApplied = cookie;
-      // dispara um evento de input para frameworks que escutam mudanças
-      const evt = new Event('input', { bubbles: true });
-      el.dispatchEvent(evt);
-      console.log('[CU] cookies1 atualizado automaticamente.');
-    } catch (e) {
-      // silencioso
-    }
-  }
-  setInterval(check, 2000); // verifica a cada 2s
-  document.addEventListener('DOMContentLoaded', check);
-})();
-</script>
-
 </body>
 </html>
